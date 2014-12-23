@@ -1,0 +1,25 @@
+#! /usr/bin/ruby
+
+require 'uri'
+
+class RGit
+
+  def run(arguments)
+
+    uri = getUri arguments[1]
+    puts "protocol: #{uri.scheme} | host: #{uri.host} | port: #{uri.port} | path: #{uri.path}"
+
+  end
+
+  def getUri(text)
+
+    uri = URI(text)
+    uri.port = 9418 if uri.port == nil
+    uri.path = "/" if uri.path == ""
+
+    uri
+  end
+
+end
+
+RGit.new.run(ARGV)
