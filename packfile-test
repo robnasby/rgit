@@ -1,0 +1,35 @@
+#! /usr/bin/ruby
+
+# Much of the code below is based on the article 'Reimplementing “git clone” in Haskell from the bottom up'
+# (http://stefan.saasen.me/articles/git-clone-in-haskell-from-the-bottom-up/) and the accompanying
+# BitBucket repository (https://bitbucket.org/ssaasen/git-in-haskell-from-the-bottom-up), specifically the
+# files Packfile.hs and Delta.hs at commit 8f8175441cf663ecc04f455975c38fc4a04d32ed.
+
+
+class PackFileTester
+
+  def run(arguments)
+
+    pack_file_path = arguments[0]
+    pack_file = File.open(pack_file_path)
+
+    total_objects = read_file_header(pack_file)
+
+  end
+
+  def read_file_header(pack_file)
+
+    pack_file.seek(0)
+    file_header = pack_file.read(12)
+
+    magic = file_header.slice(0..3)
+    version = file_header.slice(4..7).unpack('L>')[0]
+    object_count = file_header.slice(8..11).unpack('L>')[0]
+
+    object_count
+
+  end
+
+end
+
+PackFileTester.new.run(ARGV)
