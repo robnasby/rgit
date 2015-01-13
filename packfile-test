@@ -16,8 +16,19 @@ class PackFileTester
     pack_file = File.open(pack_file_path)
 
     total_objects = read_file_header(pack_file)
-    object_type = read_object_header(pack_file)
-    object_data = read_object_data(pack_file)
+
+    objects_read = 0
+    while (objects_read < total_objects)
+      object_type = read_object_header(pack_file)
+
+      case object_type
+        when :commit, :tree, :blob, :tag
+          object_data = read_object_data(pack_file)
+        when :delta_ofs, :delta_ref
+          break
+      end
+      objects_read += 1
+    end
 
   end
 
