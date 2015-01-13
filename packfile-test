@@ -6,6 +6,8 @@
 # files Packfile.hs and Delta.hs at commit 8f8175441cf663ecc04f455975c38fc4a04d32ed.
 
 
+require 'zlib'
+
 class PackFileTester
 
   def run(arguments)
@@ -15,6 +17,7 @@ class PackFileTester
 
     total_objects = read_file_header(pack_file)
     object_type = read_object_header(pack_file)
+    object_data = read_object_data(pack_file)
 
   end
 
@@ -47,6 +50,19 @@ class PackFileTester
     end
 
     type
+
+  end
+
+  def read_object_data(pack_file)
+
+    data = ""
+    zstream = Zlib::Inflate.new
+    while (!zstream.finished?)
+      compressed_data = pack_file.read(1)
+      data << zstream.inflate(compressed_data)      
+    end
+
+    data
 
   end
 
