@@ -14,6 +14,7 @@ class PackFileTester
     pack_file = File.open(pack_file_path)
 
     total_objects = read_file_header(pack_file)
+    object_type = read_object_header(pack_file)
 
   end
 
@@ -27,6 +28,45 @@ class PackFileTester
     object_count = file_header.slice(8..11).unpack('L>')[0]
 
     object_count
+
+  end
+
+  def read_object_header(pack_file)
+
+    byte = pack_file.read(1).unpack('C')[0]
+
+    type_code = (byte & 0b01110000) >> 4
+    type = pack_object_code_to_type(type_code)
+
+    size = byte & 0b00001111
+    shift = 4
+    while (is_msb_set(byte))
+      byte = pack_file.read(1).unpack('C')[0]
+      size += ((byte & 0b01111111) << shift)
+      shift += 7
+    end
+
+    type
+
+  end
+
+  def is_msb_set(byte)
+
+    !(byte & 0b10000000).zero?
+
+  end
+
+  def pack_object_code_to_type(code)
+
+    case code
+      when 1 then :commit
+      when 2 then :tree
+      when 3 then :blob
+      when 4 then :tag
+      when 6 then :delta_ofs
+      when 7 then :delta_ref
+      else :unknown
+    end
 
   end
 
