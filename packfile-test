@@ -31,7 +31,7 @@ class PackFileTester
         when :delta_ofs
           source_offset = read_delta_offset(pack_file)
         when :delta_ref
-          break
+          source_ref = read_delta_ref(pack_file)
       end
       objects_read += 1
     end
@@ -97,6 +97,12 @@ class PackFileTester
 
     offset
 
+  end
+
+  def read_delta_ref(pack_file)
+
+    pack_file.read(20).bytes.map {|b| '%02x' % b }.join
+    
   end
 
   def is_msb_set(byte)
