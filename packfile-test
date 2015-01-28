@@ -4,6 +4,10 @@
 # (http://stefan.saasen.me/articles/git-clone-in-haskell-from-the-bottom-up/) and the accompanying
 # BitBucket repository (https://bitbucket.org/ssaasen/git-in-haskell-from-the-bottom-up), specifically the
 # files Packfile.hs and Delta.hs at commit 8f8175441cf663ecc04f455975c38fc4a04d32ed.
+#
+# Additionally, understanding of delta object encoding was gained by reading code in the martine/gat 
+# repository on GitHub (https://github.com/martine/gat), specifically the files Pack.hs and Delta.hs at
+# commit 0619d0f8e8094ef688ac83d3fce7ba986f0d13ce.
 
 
 require 'zlib'
@@ -24,7 +28,9 @@ class PackFileTester
       case object_type
         when :commit, :tree, :blob, :tag
           object_data = read_object_data(pack_file)
-        when :delta_ofs, :delta_ref
+        when :delta_ofs
+          source_offset = read_delta_offset(pack_file)
+        when :delta_ref
           break
       end
       objects_read += 1
@@ -74,6 +80,22 @@ class PackFileTester
     end
 
     data
+
+  end
+
+  def read_delta_offset(pack_file)
+
+    byte = pack_file.read(1).unpack('C')[0]
+    offset = (byte & 0b01111111)
+
+    shift = 7
+    while is_msb_set(byte)
+      byte = pack_file.read(1).unpack('C')[0]
+      offset = ((offset + 1) << shift) + (byte & 0b01111111)
+      shift += 7
+    end
+
+    offset
 
   end
 
