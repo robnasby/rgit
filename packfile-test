@@ -30,8 +30,10 @@ class PackFileTester
           object_data = read_object_data(pack_file)
         when :delta_ofs
           source_offset = read_delta_offset(pack_file)
+          delta_data = read_delta_data(pack_file)
         when :delta_ref
           source_ref = read_delta_ref(pack_file)
+          delta_data = read_delta_data(pack_file)
       end
       objects_read += 1
     end
@@ -72,14 +74,7 @@ class PackFileTester
 
   def read_object_data(pack_file)
 
-    data = ""
-    zstream = Zlib::Inflate.new
-    while (!zstream.finished?)
-      compressed_data = pack_file.read(1)
-      data << zstream.inflate(compressed_data)      
-    end
-
-    data
+    decompress_data(pack_file)
 
   end
 
@@ -103,6 +98,25 @@ class PackFileTester
 
     pack_file.read(20).bytes.map {|b| '%02x' % b }.join
     
+  end
+
+  def read_delta_data(pack_file)
+
+    decompress_data(pack_file)
+
+  end
+
+  def decompress_data(pack_file)
+
+    data = ""
+    zstream = Zlib::Inflate.new
+    while (!zstream.finished?)
+      compressed_data = pack_file.read(1)
+      data << zstream.inflate(compressed_data)      
+    end
+
+    data
+
   end
 
   def is_msb_set(byte)
