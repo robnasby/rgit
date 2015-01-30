@@ -2,6 +2,12 @@
 
 class PackFile
 
+  def initialize(file_path)
+
+    @pack_file = File.open(file_path)
+
+  end
+
 end
 
 
